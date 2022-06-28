@@ -99,6 +99,8 @@ Unsigned : `uint8 | uint16 | uint32 | uint64 | uint128 | uint256(uint)`
 
 Signed   : `int8  | int16  | int32  | int64  | int128  | int256(int) `
 
+Note: Usage of types different than uint256 make sense only in structured data types, because it saves the memory. In regular usage each types takes the same amount of memory.
+
 Operators:
 
 - Comparisons: `<=`, `<`, `==`, `!=`, `>=` and `>`
@@ -119,6 +121,8 @@ Methods:
 #### balance
 
 - `<address>.balance (uint256)`: balance of the Address in Wei
+- Example:
+`address(this).balance`
 
 #### transfer and send
 
@@ -135,6 +139,23 @@ Methods:
 Delegatecall uses the code of the target address, taking all other aspects (storage, balance, ...) from the calling contract. The purpose of delegatecall is to use library code which is stored in another contract. The user has to ensure that the layout of storage in both contracts is suitable for delegatecall to be used.
 
 ```solidity
+  /* 
+  A calls B, sends 100 wei
+          B calls C, sends 50 wei
+  A --> B --> C
+              msg.sender = B
+              msg.value = 50
+              execute code on C's state variables
+              use ETH in C
+
+  A calls B, sends 100 wei
+          B delegatecall C
+  A --> B --> C
+              msg.sender = A
+              msg.value = 100
+              execute code on B's state variables
+              use ETH in B
+  */
 contract A {
   uint value;
   address public sender;
