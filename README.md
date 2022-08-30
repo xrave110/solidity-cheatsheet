@@ -12,60 +12,68 @@ This guide is not intended to teach you Solidity from the ground up, but to help
 ## Table of contents
 
 - [Solidity Cheatsheet and Best practices](#solidity-cheatsheet-and-best-practices)
-  * [Motivation](#motivation)
-  * [Table of contents](#table-of-contents)
-  * [Version pragma](#version-pragma)
-  * [Import files](#import-files)
-  * [Types](#types)
-    + [Boolean](#boolean)
-    + [Integer](#integer)
-    + [Address](#address)
+  - [Motivation](#motivation)
+  - [Table of contents](#table-of-contents)
+  - [Version pragma](#version-pragma)
+  - [Import files](#import-files)
+  - [Types](#types)
+    - [Boolean](#boolean)
+    - [Integer](#integer)
+    - [Bytes](#bytes)
+    - [Address](#address)
       - [balance](#balance)
       - [transfer and send](#transfer-and-send)
       - [call](#call)
       - [delegatecall](#delegatecall)
       - [callcode](#callcode)
-    + [Array](#array)
-    + [Fixed byte arrays](#fixed-byte-arrays)
-    + [Dynamic byte arrays](#dynamic-byte-arrays)
-    + [Enum](#enum)
-    + [Struct](#struct)
-    + [Mapping](#mapping)
-  * [Control Structures](#control-structures)
-  * [Functions](#functions)
-    + [Structure](#structure)
-    + [Access modifiers](#access-modifiers)
-    + [Parameters](#parameters)
-      - [Input parameters](#input-parameters)
+    - [Array](#array)
+    - [Fixed byte arrays](#fixed-byte-arrays)
+    - [Dynamic byte arrays](#dynamic-byte-arrays)
+    - [Enum](#enum)
+    - [Struct](#struct)
+    - [Mapping](#mapping)
+  - [Data Locations](#data-locations)
+  - [Control Structures](#control-structures)
+  - [Functions](#functions)
+    - [Structure](#structure)
+    - [Modifiers](#modifiers)
+      - [Creating your own modifiers](#creating-your-own-modifiers)
+      - [Access modifiers](#access-modifiers)
+      - [Other modifiers](#other-modifiers)
       - [Output parameters](#output-parameters)
-    + [Constructor](#constructor)
-    + [Function Calls](#function-calls)
+    - [Constructor](#constructor)
+    - [Function Calls](#function-calls)
       - [Internal Function Calls](#internal-function-calls)
       - [External Function Calls](#external-function-calls)
       - [Named Calls](#named-calls)
       - [Unnamed function parameters](#unnamed-function-parameters)
-    + [Function type](#function-type)
-    + [Function Modifier](#function-modifier)
-    + [View or Constant Functions](#view-or-constant-functions)
-    + [Pure Functions](#pure-functions)
-    + [Payable Functions](#payable-functions)
-    + [Fallback Function](#fallback-function)
-  * [Contracts](#contracts)
-    + [Creating contracts using `new`](#creating-contracts-using--new-)
-    + [Contract Inheritance](#contract-inheritance)
+    - [Function type](#function-type)
+    - [Function Modifier](#function-modifier)
+    - [View or Constant Functions](#view-or-constant-functions)
+    - [Pure Functions](#pure-functions)
+    - [Payable Functions](#payable-functions)
+    - [Fallback Function](#fallback-function)
+  - [Contracts](#contracts)
+    - [Creating contracts using `new`](#creating-contracts-using-new)
+    - [Contract Inheritance](#contract-inheritance)
       - [Multiple inheritance](#multiple-inheritance)
       - [Constructor of base class](#constructor-of-base-class)
-    + [Abstract Contracts](#abstract-contracts)
-  * [Interface](#interface)
-  * [Events](#events)
-  * [Library](#library)
-  * [Using - For](#using---for)
-  * [Error Handling](#error-handling)
-  * [Global variables](#global-variables)
-    + [Block variables](#block-variables)
-    + [Transaction variables](#transaction-variables)
-    + [Mathematical and Cryptographic Functions](#mathematical-and-cryptographic-functions)
-    + [Contract Related](#contract-related)
+    - [Abstract Contracts](#abstract-contracts)
+  - [Interface](#interface)
+  - [Events](#events)
+  - [Library](#library)
+  - [Using - For](#using---for)
+  - [Error Handling](#error-handling)
+  - [Global variables](#global-variables)
+    - [Block variables](#block-variables)
+    - [Transaction variables](#transaction-variables)
+    - [Mathematical and Cryptographic Functions](#mathematical-and-cryptographic-functions)
+    - [Contract Related](#contract-related)
+    - [Concepts and terminologies which does not exist in other technologies](#concepts-and-terminologies-which-does-not-exist-in-other-technologies)
+    - [Tricks and Tips](#tricks-and-tips)
+    - [Examples](#examples)
+      - [Removing array element - not keep order](#removing-array-element---not-keep-order)
+      - [Removing array element - keep order](#removing-array-element---keep-order)
 
 
 ## Version pragma
@@ -107,6 +115,9 @@ Operators:
 - Bit operators: `&`, `|`, `^` (bitwise exclusive or) and `~` (bitwise negation)
 - Arithmetic operators: `+`, `-`, unary `-`, unary `+`, `*`, `/`, `%`, `**` (exponentiation), `<<` (left shift) and `>>` (right shift)
 
+### Bytes
+`Bytes32` - holds 32 bytes of data
+`Bytes16` - holds 16 bytes of data
 ### Address
 
 `address`: Holds an Ethereum address (20 byte value).
@@ -189,9 +200,56 @@ contract B {
 Arrays can be dynamic or have a fixed size.
 
 ```solidity
-uint[] dynamicSizeArray;
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.13;
 
-uint[7] fixedSizeArray;
+contract Array {
+    // Several ways to initialize an array
+    uint[] public arr;
+    uint[] public arr2 = [1, 2, 3];
+    // Fixed sized array, all elements initialize to 0
+    uint[10] public myFixedSizeArr;
+
+    function get(uint i) public view returns (uint) {
+        return arr[i];
+    }
+
+    // Solidity can return the entire array.
+    // But this function should be avoided for
+    // arrays that can grow indefinitely in length.
+    function getArr() public view returns (uint[] memory) {
+        return arr;
+    }
+
+    function push(uint i) public {
+        // Append to array
+        // This will increase the array length by 1.
+        arr.push(i);
+    }
+
+    function pop() public {
+        // Remove last element from array
+        // This will decrease the array length by 1
+        arr.pop();
+    }
+
+    function getLength() public view returns (uint) {
+        return arr.length;
+    }
+
+    function remove(uint index) public {
+        // Delete does not change the array length.
+        // It resets the value at index to it's default value,
+        // in this case 0
+        delete arr[index];
+    }
+
+    function examples() external {
+        // create array in memory, only fixed size can be created
+        uint[] memory a = new uint[](5);
+    }
+}
+
 ```
 
 ### Fixed byte arrays
@@ -217,6 +275,7 @@ Members
 ### Enum
 
 Enum works just like in every other language.
+Enums can be declared outside of a contract.
 
 ```solidity
 enum ActionChoices { 
@@ -232,6 +291,7 @@ ActionChoices choice = ActionChoices.GoStraight;
 ### Struct
 
 New types can be declared using struct.
+Structs can be declared outside of a contract and imported in another contract.
 
 ```solidity
 struct Funder {
@@ -239,7 +299,16 @@ struct Funder {
     uint amount;
 }
 
-Funder funders;
+Funder[] public funders;
+// 3 ways to initialize a struct
+//1. initialize an empty struct and then update it
+Funder funder;
+funder.addr = <addr>;
+funders.push(funder);
+//2. key value mapping
+funders.push(Funder({addr: <addr>, amount: <amount>}));
+//3. call it like a function
+funders.push(Funder(<addr>, <amount>));
 ```
 
 ### Mapping
@@ -250,7 +319,12 @@ Mappings can be seen as **hash tables** which are virtually initialized such tha
 
 **key** can be almost any type except for a mapping, a dynamically sized array, a contract, an enum, or a struct. **value** can actually be any type, including mappings.
 
+## Data Locations
+Variables are declared as either storage, memory or calldata to explicitly specify the location of the data.
 
+storage - variable is a state variable (store on blockchain)
+memory - variable is in memory and it exists while a function is being called
+calldata - special data location that contains function arguments
 ## Control Structures
 
 Most of the control structures from JavaScript are available in Solidity except for `switch` and `goto`. 
@@ -270,12 +344,46 @@ Most of the control structures from JavaScript are available in Solidity except 
 
 `function (<parameter types>) {internal|external|public|private} [pure|constant|view|payable] [returns (<return types>)]`
 
-### Access modifiers
+### Modifiers
+Modifiers are code that can be run before and / or after a function call.
+
+Modifiers can be used to:
+
+Restrict access
+Validate inputs
+Guard against reentrancy hack
+#### Creating your own modifiers
+
+Syntax:
+```
+modifier <name>(){
+  //Some checks and functionalities
+  _;
+}
+```
+Example:
+```
+    modifier onlyOwner() {
+        require(msg.sender == owner, "Not owner");
+        // Underscore is a special character only used inside
+        // a function modifier and it tells Solidity to
+        // execute the rest of the code.
+        _;
+    }
+```
+#### Access modifiers
 
 - ```public``` - Accessible from this contract, inherited contracts and externally
 - ```private``` - Accessible only from this contract
 - ```internal``` - Accessible only from this contract and contracts inheriting from it
 - ```external``` - Cannot be accessed internally, only externally. Recommended to reduce gas. Access internally with `this.f`.
+
+#### Other modifiers
+  ```immutable``` - can be set inside the constructor but cannot be modified
+  ```address public immutable MY_ADDRESS;
+  constructor(uint _myUint) {
+    MY_ADDRESS = msg.sender;
+  }```
 
 ### Parameters
 
@@ -679,3 +787,99 @@ contract C {
 - `selfdestruct(address recipient)`: destroy the current contract, sending its funds to the given Address
 - `suicide(address recipient)`: alias to selfdestruct. Soon to be deprecated.
 
+### Concepts and terminologies which does not exist in other technologies
+- `EVM and gas`:
+  - EVM (Ethereum Virtual Machine) - bunch of nodes (computers which in its virtual machines run ethereum software). It executes smart contracts. Execution requires some amount of gas. Unspent gas will be refunded.
+  - `Gas` - unit of computation, each executaable code uses some gas. This concept is created to prevent infinite loops in turing complete language(as solidity).
+  - `Gas Price` - determined by market supply and demand. It is denominated in ETH (in Wei (10**18)). Smallest amount is for sending ETH (21000 WEI). The higher gas price the faster transaction.
+- Outputs of compilation:
+  - ABI (Application Binary Interface) - some kind of header file which tells how to communicate with a smart contract and what methods and attributes are available
+  - Bytecode - translation of program that EVM can easily understand. It consist of two parts:
+    - creation - used during deployment
+    - run time code - stored in the ethereum network
+    - bytecode can be translated to some assemler simillar code called Opcode (which is more understandable by human  and consist of atomic commends). Each kind of Opcode has some specific gas usage.
+- Web3 - bridge between smart contracts and programming languages like python, javascript etc..
+- Two types of calls 
+  -  get data (without fees)
+  -  send data (with gas)
+- `Two types of account`:
+  - EOA (External owned Account) - account controlled by the private key
+  - Contract - not controlled by private key
+### Tricks and Tips
+
+### Examples
+#### Removing array element - not keep order
+```
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.13;
+
+contract ArrayRemoveByShifting {
+    // [1, 2, 3] -- remove(1) --> [1, 3, 3] --> [1, 3]
+    // [1, 2, 3, 4, 5, 6] -- remove(2) --> [1, 2, 4, 5, 6, 6] --> [1, 2, 4, 5, 6]
+    // [1, 2, 3, 4, 5, 6] -- remove(0) --> [2, 3, 4, 5, 6, 6] --> [2, 3, 4, 5, 6]
+    // [1] -- remove(0) --> [1] --> []
+
+    uint[] public arr;
+
+    function remove(uint _index) public {
+        require(_index < arr.length, "index out of bound");
+
+        for (uint i = _index; i < arr.length - 1; i++) {
+            arr[i] = arr[i + 1];
+        }
+        arr.pop();
+    }
+
+    function test() external {
+        arr = [1, 2, 3, 4, 5];
+        remove(2);
+        // [1, 2, 4, 5]
+        assert(arr[0] == 1);
+        assert(arr[1] == 2);
+        assert(arr[2] == 4);
+        assert(arr[3] == 5);
+        assert(arr.length == 4);
+
+        arr = [1];
+        remove(0);
+        // []
+        assert(arr.length == 0);
+    }
+}
+```
+#### Removing array element - keep order
+```
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.13;
+
+contract ArrayReplaceFromEnd {
+    uint[] public arr;
+
+    // Deleting an element creates a gap in the array.
+    // One trick to keep the array compact is to
+    // move the last element into the place to delete.
+    function remove(uint index) public {
+        // Move the last element into the place to delete
+        arr[index] = arr[arr.length - 1];
+        // Remove the last element
+        arr.pop();
+    }
+
+    function test() public {
+        arr = [1, 2, 3, 4];
+
+        remove(1);
+        // [1, 4, 3]
+        assert(arr.length == 3);
+        assert(arr[0] == 1);
+        assert(arr[1] == 4);
+        assert(arr[2] == 3);
+
+        remove(2);
+        // [1, 4]
+        assert(arr.length == 2);
+        assert(arr[0] == 1);
+        assert(arr[1] == 4);
+    }
+}
+```
